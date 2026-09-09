@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bot Detection Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 420px; margin: 60px auto; }
+    input { display: block; width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+    button { padding: 10px 16px; cursor: pointer; }
+    #result { margin-top: 16px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Sign Up</h2>
+  <form id="signupForm">
+    <input type="text" name="name" placeholder="Name" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <button type="submit">Submit</button>
+  </form>
+  <div id="result"></div>
+
+  <script src="collector.js"></script>
+  <script>
+    const form = document.getElementById('signupForm');
+    const tracker = new BehaviorTracker();
+    tracker.attachToForm(form);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = tracker.getFeaturePayload();
+
+      const res = await fetch('http://localhost:5000/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      document.getElementById('result').textContent =
+        `Verdict: ${data.verdict} (bot_probability: ${data.bot_probability.toFixed(3)})`;
+    });
+  </script>
+</body>
+</html>
